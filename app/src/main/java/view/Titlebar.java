@@ -19,6 +19,7 @@ public class Titlebar extends LinearLayout implements View.OnClickListener {
     private TextView tv_sousuo;
     private RelativeLayout rl_game;
     private ImageView iv_record;
+
     public Titlebar(Context context, AttributeSet attrs) {
         super(context, attrs);
         this.context = context;

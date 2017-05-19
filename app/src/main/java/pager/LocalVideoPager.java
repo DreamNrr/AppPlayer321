@@ -1,6 +1,7 @@
 package pager;
 
 import android.content.ContentResolver;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
@@ -39,12 +40,13 @@ public class LocalVideoPager extends BaseFragment {
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                //得到点击item对应的对象
-//                MediaItem mediaItem = mediaItems.get(position);
 
                 MediaItem item = adapter.getItem(position);
                 Toast.makeText(context, ""+item.toString(), Toast.LENGTH_SHORT).show();
 
+                Intent intent = new Intent();
+                intent.setDataAndType(Uri.parse(item.getData()),"video/*");
+                startActivity(intent);
 
             }
         });
