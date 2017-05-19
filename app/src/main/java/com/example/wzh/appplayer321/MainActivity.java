@@ -1,7 +1,7 @@
 package com.example.wzh.appplayer321;
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.RadioGroup;
@@ -18,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
     private RadioGroup rg_main;
     private ArrayList<BaseFragment> fragments;
     private int position;
+    private Fragment tempFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,22 +61,29 @@ public class MainActivity extends AppCompatActivity {
                     position  = 3;
                     break;
             }
-            addFragment();
-
-
+            BaseFragment currentFragment = fragments.get(position);
+            addFragment(currentFragment);
         }
     }
 
-    private void addFragment() {
-        //根据位置得到对应的Fragment
-        BaseFragment baseFragment = fragments.get(position);
-        //1.得到FragmentNanager
-        FragmentManager fm = getSupportFragmentManager();
-        //2.开启事务
-        FragmentTransaction ft = fm.beginTransaction();
-        //3.添加
-        ft.replace(R.id.fl_content,baseFragment);
-        //4.提交
-        ft.commit();
+    private void addFragment( Fragment currentFragment) {
+
+        if(tempFragment!= currentFragment) {
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            if(!currentFragment.isAdded()) {
+                if(tempFragment!=null) {
+                    ft.hide(tempFragment);
+                }
+                ft.add(R.id.fl_content,currentFragment);
+            }else {
+                if(tempFragment!=null) {
+                    ft.hide(tempFragment);
+                }
+                ft.show(currentFragment);
+            }
+            ft.commit();
+            tempFragment = currentFragment;
+
+        }
     }
 }
