@@ -9,19 +9,22 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity"
-            android:launchMode="singleTask"
-            android:configChanges="keyboardHidden|orientation|screenSize">
-
-        </activity>
-        <activity android:name="activity.SystemVideoPlayerActivity"></activity>
         <activity android:name=".WelcomeActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTask" />
+        <activity android:name="activity.SystemVideoPlayerActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/myScreen"
+
+            ></activity>
     </application>
 
 </manifest>

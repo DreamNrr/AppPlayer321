@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -17,6 +18,7 @@ import com.example.wzh.appplayer321.R;
 
 import java.util.ArrayList;
 
+import activity.SystemVideoPlayerActivity;
 import adapter.LocalVideoAdapter;
 import domain.MediaItem;
 import fragment.BaseFragment;
@@ -44,7 +46,12 @@ public class LocalVideoPager extends BaseFragment {
                 MediaItem item = adapter.getItem(position);
                 Toast.makeText(context, ""+item.toString(), Toast.LENGTH_SHORT).show();
 
-                Intent intent = new Intent();
+                //把系统的播放器调起来
+                Intent intent = new Intent(context, SystemVideoPlayerActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("videoList",mediaItems);
+                intent.putExtra("position",position);
+                intent.putExtras(bundle);
                 intent.setDataAndType(Uri.parse(item.getData()),"video/*");
                 startActivity(intent);
 
