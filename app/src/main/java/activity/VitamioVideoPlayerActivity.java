@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,21 +25,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.wzh.appplayer321.R;
-import com.example.wzh.appplayer321.view.VideoView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import domain.MediaItem;
+import io.vov.vitamio.MediaPlayer;
+import io.vov.vitamio.Vitamio;
+import io.vov.vitamio.widget.VideoView;
 import utils.Utils;
 
-
-public class SystemVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
+public class VitamioVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int HIDE_MEDIACONTROLLER = 1;
     private static final int DEFUALT_SCREEN = 0;
     private static final int FULL_SCREEN = 1;
+    private LinearLayout ll_buffering;
+    private TextView tv_net_speed;
 
     private boolean isNetUri;
     private  float startY;
@@ -56,12 +58,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private VideoView vv;
     private Uri uri;
     private static final int PROGRESS = 0;
-    private static final int SHOW_NET_SPEED = 2;
     private ArrayList<MediaItem> mediaItems;
-    private LinearLayout ll_buffering;
-    private TextView tv_net_speed;
-    private LinearLayout ll_loading;
-    private TextView tv_loading_net_speed;
+
     private LinearLayout llTop;
     private TextView tvName;
     private ImageView ivBattery;
@@ -99,7 +97,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
      * (http://www.buzzingandroid.com/tools/android-layout-finder)
      */
     private void findViews() {
-        setContentView(R.layout.activity_system_video_player);
+        Vitamio.isInitialized(getApplicationContext());
+        setContentView(R.layout.activity_vitamio_video_player);
         llTop = (LinearLayout)findViewById( R.id.ll_top );
         tvName = (TextView)findViewById( R.id.tv_name );
         ivBattery = (ImageView)findViewById( R.id.iv_battery );
@@ -119,11 +118,6 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         vv = (VideoView)findViewById(R.id.vv);
         ll_buffering = (LinearLayout) findViewById(R.id.ll_buffering);
         tv_net_speed = (TextView) findViewById(R.id.tv_net_speed);
-        ll_loading = (LinearLayout)findViewById(R.id.ll_loading);
-        tv_loading_net_speed = (TextView)findViewById(R.id.tv_loading_net_speed);
-
-
-
 
         btnVoice.setOnClickListener( this );
         btnSwitchPlayer.setOnClickListener( this );
@@ -345,16 +339,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what){
-                case SHOW_NET_SPEED:
-                    if(isNetUri){
-                        String netSpeed = utils.getNetSpeed(SystemVideoPlayerActivity.this);
-                        tv_loading_net_speed.setText("正在加载中...."+netSpeed);
-                        tv_net_speed.setText("正在缓冲...."+netSpeed);
-                        sendEmptyMessageDelayed(SHOW_NET_SPEED,1000);
-                    }
-                    break;
                 case PROGRESS:
-                    int currentPosition = vv.getCurrentPosition();
+                    int currentPosition = (int) vv.getCurrentPosition();
                     seekbarVideo.setProgress(currentPosition);
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
                     tvSystemTime.setText(getSystemTime());
@@ -372,8 +358,10 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
                         int duration = currentPosition - preCurrentPosition;
                         if(duration <500){
+                            //卡
                             ll_buffering.setVisibility(View.VISIBLE);
                         }else{
+                            //不卡
                             ll_buffering.setVisibility(View.GONE);
                         }
 
@@ -398,14 +386,13 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                 videoWidth = mp.getVideoWidth();
                 videoHeight = mp.getVideoHeight();
                 //得到视频的总时长
-                int duration = vv.getDuration();
+                int duration = (int) vv.getDuration();
                 seekbarVideo.setMax(duration);
                 //设置文本总时间
                 tvDuration.setText(utils.stringForTime(duration));
                 //vv.seekTo(100);
                 vv.start();//开始播放
                 handler.sendEmptyMessage(PROGRESS);
-                ll_loading.setVisibility(View.GONE);
                 hideMediaController();
 
                 setVideoType(DEFUALT_SCREEN);
@@ -596,7 +583,6 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
             isNetUri =  utils.isNetUri(mediaItem.getData());
-            ll_loading.setVisibility(View.INVISIBLE);
             //设置按钮状态
             setButtonStatus();
         }else{
@@ -649,7 +635,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
             isNetUri =  utils.isNetUri(mediaItem.getData());
-            ll_loading.setVisibility(View.INVISIBLE);
+
             //设置按钮状态
             setButtonStatus();
         }

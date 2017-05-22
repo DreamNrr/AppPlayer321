@@ -8,8 +8,8 @@ import android.view.ViewGroup;
  * Created by WZH on 2017/5/21.
  */
 
-public class VideoView extends android.widget.VideoView{
-    public VideoView(Context context, AttributeSet attrs) {
+public class VitamioVideoView extends io.vov.vitamio.widget.VideoView{
+    public VitamioVideoView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
@@ -24,7 +24,4 @@ public class VideoView extends android.widget.VideoView{
         l.height = height;
         setLayoutParams(l);
     }
-
-
-
 }

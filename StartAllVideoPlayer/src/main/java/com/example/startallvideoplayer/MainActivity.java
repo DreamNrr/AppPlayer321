@@ -13,11 +13,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
     }
-
     public void startAllVideoPlayer(View v) {
         //把系统的播放器调起来
         Intent intent = new Intent();
-        intent.setDataAndType(Uri.parse("http://192.168.31.168:8080/yellow.mp4"),"video/*");
+        intent.setDataAndType(Uri.parse("http://vfx.mtime.cn/Video/2017/05/16/mp4/170516144657635280.mp4"),"video/*");
         startActivity(intent);
 
 
