@@ -42,7 +42,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private static final int DEFUALT_SCREEN = 0;
     private static final int FULL_SCREEN = 1;
 
-
+    private boolean isNetUri;
     private  float startY;
     private float startX;//记录手指按下时的Y坐标
     /**
@@ -152,8 +152,11 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             MediaItem mediaItem = mediaItems.get(position);
             tvName.setText(mediaItem.getName());
             vv.setVideoPath(mediaItem.getData());
+            isNetUri =  utils.isNetUri(mediaItem.getData());
         }else if(uri != null){
             vv.setVideoURI(uri);
+            tvName.setText(uri.toString());
+            isNetUri =  utils.isNetUri(uri.toString());
         }
         setButtonStatus();
 
@@ -338,6 +341,17 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
 
                     tvSystemTime.setText(getSystemTime());
+
+
+                    //设置视频缓存效果
+                    if(isNetUri){
+                        int bufferPercentage = vv.getBufferPercentage();//0~100;
+                        int totalBuffer = bufferPercentage*seekbarVideo.getMax();
+                        int secondaryProgress =totalBuffer/100;
+                        seekbarVideo.setSecondaryProgress(secondaryProgress);
+                    }else{
+                        seekbarVideo.setSecondaryProgress(0);
+                    }
 
                     sendEmptyMessageDelayed(PROGRESS,1000);
 
@@ -530,11 +544,9 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             MediaItem mediaItem = mediaItems.get(position);
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
-
+            isNetUri =  utils.isNetUri(mediaItem.getData());
             //设置按钮状态
             setButtonStatus();
-
-
         }else{
             Toast.makeText(this,"退出播放器",Toast.LENGTH_SHORT).show();
             finish();
@@ -584,6 +596,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             MediaItem mediaItem = mediaItems.get(position);
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
+            isNetUri =  utils.isNetUri(mediaItem.getData());
 
             //设置按钮状态
             setButtonStatus();
@@ -609,7 +622,9 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         }
         super.onDestroy();
     }
-
+/*
+* 监听按手机监听键改变声音
+* */
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {

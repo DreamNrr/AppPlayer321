@@ -36,5 +36,14 @@ public class Utils {
 			return mFormatter.format("%02d:%02d", minutes, seconds).toString();
 		}
 	}
-
+	public boolean isNetUri(String data) {
+		boolean isNetUri = false;
+		if (data != null) {
+			if (data.toLowerCase().startsWith("http") || data.toLowerCase().startsWith("mms") || data.toLowerCase().startsWith("rtsp")) {
+				//网络资源
+				isNetUri = true;
+			}
+		}
+		return isNetUri;
+	}
 }
