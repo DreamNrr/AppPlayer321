@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -230,7 +231,6 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                 //3.计算偏移量
                 float distanceY = startY - endY;
                 if(startX>screenWidth/2) {
-
                     //要改变的声音 = (滑动的距离 / 总距离)*最大音量
                     float delta = (distanceY / touchRang) * maxVoice;
                     //最终声音 = 原来的声音 + 要改变的声音
@@ -512,7 +512,6 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                 break;
         }
     }
-
     private void setStartOrPause() {
         if(vv.isPlaying()){
             vv.pause();
@@ -522,6 +521,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
         }
     }
+
 
     private void setNextVideo() {
         position++;
@@ -602,16 +602,29 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             handler.removeCallbacksAndMessages(null);
             handler = null;
         }
-
         //取消注册
         if(receiver != null){
             unregisterReceiver(receiver);
             receiver = null;
         }
-
         super.onDestroy();
+    }
 
-
-
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            currentVoice--;
+            updateVoiceProgress(currentVoice);
+            handler.removeCallbacksAndMessages(null);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER,4000);
+            return true;
+        }else if(keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            currentVoice++;
+            updateVoiceProgress(currentVoice);
+            handler.removeCallbacksAndMessages(null);
+            handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 }
