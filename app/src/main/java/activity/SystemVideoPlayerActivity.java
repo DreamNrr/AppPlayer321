@@ -4,23 +4,28 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import com.example.wzh.appplayer321.R;
+import com.example.wzh.appplayer321.view.VideoView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -31,6 +36,22 @@ import utils.Utils;
 
 
 public class SystemVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
+
+    private static final int HIDE_MEDIACONTROLLER = 1;
+    private static final int DEFUALT_SCREEN = 0;
+    private static final int FULL_SCREEN = 1;
+
+
+    private  float startY;
+    private float startX;//记录手指按下时的Y坐标
+    /**
+     * 滑动的区域
+     */
+    private float touchRang;
+    /**
+     * 当前的音量
+     */
+    private  int mVol;
     private VideoView vv;
     private Uri uri;
     private static final int PROGRESS = 0;
@@ -55,6 +76,16 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private Utils utils;
     private MyBroadCastReceiver receiver;
     private int position;
+    private GestureDetector detector;
+    private boolean isFullScreen = false;
+    private int screenHeight;
+    private int screenWidth;
+    private int videoWidth;
+    private int videoHeight;
+    private int currentVoice;
+    private AudioManager am;
+    private int maxVoice;
+    private boolean isMute = false;
 
     /**
      * Find the Views in the layout<br />
@@ -89,6 +120,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         btnStartPause.setOnClickListener( this );
         btnNext.setOnClickListener( this );
         btnSwitchScreen.setOnClickListener( this );
+        seekbarVoice.setMax(maxVoice);
+        seekbarVoice.setProgress(currentVoice);
     }
 
 
@@ -99,7 +132,6 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         initData();
         findViews();
         getData();
-        utils = new Utils();
 
         //得到播放地址
         uri = getIntent().getData();
@@ -137,6 +169,124 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         //监听电量变化
         intentFilter.addAction(Intent.ACTION_BATTERY_CHANGED);
         registerReceiver(receiver,intentFilter);
+
+        //手势识别器
+        detector =  new GestureDetector(this,new GestureDetector.SimpleOnGestureListener(){
+            @Override
+            public void onLongPress(MotionEvent e) {
+                super.onLongPress(e);
+                setStartOrPause();
+            }
+
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                if (isShowMediaController) {
+                    hideMediaController();
+                    handler.removeMessages(HIDE_MEDIACONTROLLER);
+                } else {
+                    showMediaController();
+                    handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
+                }
+                return super.onSingleTapConfirmed(e);
+            }
+
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                if (isFullScreen) {
+                    //默认
+                    setVideoType(DEFUALT_SCREEN);
+                } else {
+                    //全屏
+                    setVideoType(FULL_SCREEN);
+                }
+                return super.onDoubleTap(e);
+            }
+
+        });
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        screenHeight = metrics.heightPixels;
+        screenWidth = metrics.widthPixels;
+        am = (AudioManager) getSystemService(AUDIO_SERVICE);
+        currentVoice = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+        maxVoice = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+
+    }
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        detector.onTouchEvent(event);
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN://手指按下屏幕
+                //1.记录相关的值
+                startY = event.getY();
+                startX=event.getX();
+                touchRang =Math.min(screenWidth, screenHeight);//screenHeight
+                mVol = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                handler.removeMessages(HIDE_MEDIACONTROLLER);
+                break;
+            case MotionEvent.ACTION_MOVE://手指在屏幕上移动
+                //2.来到结束的坐标
+                float endY = event.getY();
+                //3.计算偏移量
+                float distanceY = startY - endY;
+                if(startX>screenWidth/2) {
+
+                    //要改变的声音 = (滑动的距离 / 总距离)*最大音量
+                    float delta = (distanceY / touchRang) * maxVoice;
+                    //最终声音 = 原来的声音 + 要改变的声音
+                    float volume = Math.min(Math.max(mVol + delta, 0), maxVoice);
+                        if (delta != 0) {
+                        updateVoiceProgress((int) volume);
+                        }
+                } else {
+        //屏幕左半部分上滑，亮度变大，下滑，亮度变小
+                    final double FLING_MIN_DISTANCE = 0.5;
+                    final double FLING_MIN_VELOCITY = 0.5;
+                    if (distanceY > FLING_MIN_DISTANCE && Math.abs(distanceY) > FLING_MIN_VELOCITY) {
+                        setBrightness(20);
+                    }
+                    if (distanceY < FLING_MIN_DISTANCE
+                            && Math.abs(distanceY) > FLING_MIN_VELOCITY) {
+                        setBrightness(-20);
+                    }
+                }
+//                startY = event.getY();
+                    break;
+
+                    case MotionEvent.ACTION_UP://手指离开屏幕
+                        handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 5000);
+                        break;
+
+        }
+
+        return super.onTouchEvent(event);
+    }
+ /*
+* 设置屏幕亮度 lp = 0 全暗 ，lp= -1,根据系统设置， lp = 1; 最亮
+*/
+    public void setBrightness(float brightness) {
+        WindowManager.LayoutParams lp = getWindow().getAttributes();
+        lp.screenBrightness = lp.screenBrightness + brightness / 255.0f;
+        if (lp.screenBrightness > 1) {
+            lp.screenBrightness = 1;
+        } else if (lp.screenBrightness < 0.2) {
+            lp.screenBrightness = (float) 0.2;
+        }
+        getWindow().setAttributes(lp);
+    }
+
+    private  boolean isShowMediaController = false;
+
+    private void  hideMediaController(){
+        llBottom.setVisibility(View.INVISIBLE);
+        llTop.setVisibility(View.GONE);
+        isShowMediaController = false;
+    }
+
+    public void showMediaController(){
+        llBottom.setVisibility(View.VISIBLE);
+        llTop.setVisibility(View.VISIBLE);
+        isShowMediaController = true;
     }
 
     public void getData() {
@@ -182,20 +332,18 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             super.handleMessage(msg);
             switch (msg.what){
                 case PROGRESS:
-                    //得到当前进度
                     int currentPosition = vv.getCurrentPosition();
-                    //让SeekBar进度更新
                     seekbarVideo.setProgress(currentPosition);
 
-                    //设置文本当前的播放进度
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
 
-                    //得到系统时间
                     tvSystemTime.setText(getSystemTime());
 
-                    //循环发消息
                     sendEmptyMessageDelayed(PROGRESS,1000);
 
+                    break;
+                case HIDE_MEDIACONTROLLER:
+                    hideMediaController();
                     break;
             }
         }
@@ -206,7 +354,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             //底层准备播放完成的时候回调
             @Override
             public void onPrepared(MediaPlayer mp) {
-
+                videoWidth = mp.getVideoWidth();
+                videoHeight = mp.getVideoHeight();
                 //得到视频的总时长
                 int duration = vv.getDuration();
                 seekbarVideo.setMax(duration);
@@ -215,6 +364,9 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                 //vv.seekTo(100);
                 vv.start();//开始播放
                 handler.sendEmptyMessage(PROGRESS);
+                hideMediaController();
+
+                setVideoType(DEFUALT_SCREEN);
             }
         });
 
@@ -230,19 +382,10 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         vv.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-         //       Toast.makeText(SystemVideoPlayerActivity.this, "视频播放完成", Toast.LENGTH_SHORT).show();
-        //        finish();//退出当前页面
                 setNextVideo();
             }
         });
-        //设置Seekbar状态改变的监听
         seekbarVideo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            /**
-             *
-             * @param seekBar
-             * @param progress
-             * @param fromUser true:用户拖动改变的，false:系统更新改变的
-             */
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if(fromUser){
@@ -251,6 +394,25 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
             }
 
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                handler.removeMessages(HIDE_MEDIACONTROLLER);
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
+            }
+        });
+
+        seekbarVoice.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(fromUser){
+                    updateVoiceProgress(progress);
+                }
+
+            }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
 
@@ -262,12 +424,26 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             }
         });
     }
+    private void updateVoiceProgress(int progress) {
+        currentVoice = progress;
+        //真正改变声音
+        am.setStreamVolume(AudioManager.STREAM_MUSIC,currentVoice,0);
+        //改变进度条
+        seekbarVoice.setProgress(currentVoice);
+        if(currentVoice <=0){
+            isMute = true;
+        }else {
+            isMute = false;
+        }
+
+    }
 
 
     @Override
     public void onClick(View v) {
         if ( v == btnVoice ) {
-            // Handle clicks for btnVoice
+            isMute = !isMute;
+            updateVoice(isMute);
         } else if ( v == btnSwitchPlayer ) {
             // Handle clicks for btnSwitchPlayer
         } else if ( v == btnExit ) {
@@ -277,23 +453,73 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             setPreVideo();
             // Handle clicks for btnPre
         } else if ( v == btnStartPause ) {
-            if(vv.isPlaying()){
-                //暂停
-                vv.pause();
-                //按钮状态-播放
-                btnStartPause.setBackgroundResource(R.drawable.btn_start_selector);
-            }else {
-                //播放
-                vv.start();
-                //按钮状态-暂停
-                btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
-            }
+            setStartOrPause();
             // Handle clicks for btnStartPause
         } else if ( v == btnNext ) {
             setNextVideo();
             // Handle clicks for btnNext
         } else if ( v == btnSwitchScreen ) {
-            // Handle clicks for btnSwitchScreen
+            if (isFullScreen) {
+                //默认
+                setVideoType(DEFUALT_SCREEN);
+            } else {
+                //全屏
+                setVideoType(FULL_SCREEN);
+            }
+        }
+        handler.removeMessages(HIDE_MEDIACONTROLLER);
+        handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
+
+
+    }
+
+    private void updateVoice(boolean isMute) {
+        if(isMute){
+            //静音
+            am.setStreamVolume(AudioManager.STREAM_MUSIC,0,0);
+            seekbarVoice.setProgress(0);
+        }else{
+            //非静音
+            am.setStreamVolume(AudioManager.STREAM_MUSIC,currentVoice,0);
+            seekbarVoice.setProgress(currentVoice);
+        }
+    }
+
+    private void setVideoType(int videoType) {
+        switch (videoType) {
+            case FULL_SCREEN:
+                isFullScreen = true;
+                btnSwitchScreen.setBackgroundResource(R.drawable.btn_switch_screen_default_selector);
+                vv.setVideoSize(screenWidth, screenHeight);
+
+                break;
+            case DEFUALT_SCREEN:
+                isFullScreen = false;
+                btnSwitchScreen.setBackgroundResource(R.drawable.btn_switch_screen_full_selector);
+                int mVideoWidth = videoWidth;
+                int mVideoHeight = videoHeight;
+
+                int width = screenWidth;
+                int height = screenHeight;
+
+                if (mVideoWidth * height < width * mVideoHeight) {
+                    width = height * mVideoWidth / mVideoHeight;
+                } else if (mVideoWidth * height > width * mVideoHeight) {
+                    height = width * mVideoHeight / mVideoWidth;
+                }
+                vv.setVideoSize(width, height);
+
+                break;
+        }
+    }
+
+    private void setStartOrPause() {
+        if(vv.isPlaying()){
+            vv.pause();
+            btnStartPause.setBackgroundResource(R.drawable.btn_start_selector);
+        }else {
+            vv.start();
+            btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
         }
     }
 

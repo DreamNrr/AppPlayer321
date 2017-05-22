@@ -1,4 +1,4 @@
-package view;
+package com.example.wzh.appplayer321.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
