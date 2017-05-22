@@ -41,6 +41,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private static final int HIDE_MEDIACONTROLLER = 1;
     private static final int DEFUALT_SCREEN = 0;
     private static final int FULL_SCREEN = 1;
+    private LinearLayout ll_buffering;
+    private TextView tv_net_speed;
 
     private boolean isNetUri;
     private  float startY;
@@ -113,6 +115,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         btnNext = (Button)findViewById( R.id.btn_next );
         btnSwitchScreen = (Button)findViewById( R.id.btn_switch_screen );
         vv = (VideoView)findViewById(R.id.vv);
+        ll_buffering = (LinearLayout) findViewById(R.id.ll_buffering);
+        tv_net_speed = (TextView) findViewById(R.id.tv_net_speed);
 
         btnVoice.setOnClickListener( this );
         btnSwitchPlayer.setOnClickListener( this );
@@ -328,7 +332,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             ivBattery.setImageResource(R.drawable.ic_battery_100);
         }
     }
-
+    private int preCurrentPosition;
     private Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
@@ -337,12 +341,8 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                 case PROGRESS:
                     int currentPosition = vv.getCurrentPosition();
                     seekbarVideo.setProgress(currentPosition);
-
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
-
                     tvSystemTime.setText(getSystemTime());
-
-
                     //设置视频缓存效果
                     if(isNetUri){
                         int bufferPercentage = vv.getBufferPercentage();//0~100;
@@ -353,8 +353,22 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                         seekbarVideo.setSecondaryProgress(0);
                     }
 
-                    sendEmptyMessageDelayed(PROGRESS,1000);
+                    if(isNetUri && vv.isPlaying()){
 
+                        int duration = currentPosition - preCurrentPosition;
+                        if(duration <500){
+                            //卡
+                            ll_buffering.setVisibility(View.VISIBLE);
+                        }else{
+                            //不卡
+                            ll_buffering.setVisibility(View.GONE);
+                        }
+
+                        preCurrentPosition = currentPosition;
+                    }
+
+
+                    sendEmptyMessageDelayed(PROGRESS,1000);
                     break;
                 case HIDE_MEDIACONTROLLER:
                     hideMediaController();
