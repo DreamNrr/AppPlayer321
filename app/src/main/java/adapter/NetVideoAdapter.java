@@ -24,7 +24,7 @@ public class NetVideoAdapter extends BaseAdapter {
     private Utils utils;
     private ImageOptions imageOptions;
 
-    public NetVideoAdapter(Context context, List<MoveInfo.TrailersBean> data) {
+    public NetVideoAdapter(Context context,  List<MoveInfo.TrailersBean> data) {
         this.context = context;
         this.data = data;
         utils = new Utils();
@@ -34,7 +34,6 @@ public class NetVideoAdapter extends BaseAdapter {
                 .setFailureDrawableId(R.drawable.video_default)
                 .setLoadingDrawableId(R.drawable.video_default)
                 .build();
-
     }
 
     @Override
@@ -74,8 +73,6 @@ public class NetVideoAdapter extends BaseAdapter {
 
         viewHolder.tv_duration.setText(moveInfo.getVideoTitle());
         x.image().bind(viewHolder.iv_icon, moveInfo.getCoverImg(),imageOptions);
-
-
 
         return convertView;
     }

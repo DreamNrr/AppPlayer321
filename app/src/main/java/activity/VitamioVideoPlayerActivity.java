@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.wzh.appplayer321.R;
+import com.example.wzh.appplayer321.view.VitamioVideoView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,7 +36,6 @@ import java.util.Date;
 import domain.MediaItem;
 import io.vov.vitamio.MediaPlayer;
 import io.vov.vitamio.Vitamio;
-import io.vov.vitamio.widget.VideoView;
 import utils.Utils;
 
 
@@ -53,7 +53,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
     private float startX;//记录手指按下时的Y坐标
     private float touchRang;
     private  int mVol;
-    private VideoView vv;
+    private VitamioVideoView vv;
     private Uri uri;
     private static final int PROGRESS = 0;
     private ArrayList<MediaItem> mediaItems;
@@ -114,7 +114,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
         btnStartPause = (Button)findViewById( R.id.btn_start_pause );
         btnNext = (Button)findViewById( R.id.btn_next );
         btnSwitchScreen = (Button)findViewById( R.id.btn_switch_screen );
-        vv = (VideoView)findViewById(R.id.vv);
+        vv = (VitamioVideoView)findViewById(R.id.vv);
         ll_buffering = (LinearLayout) findViewById(R.id.ll_buffering);
         tv_net_speed = (TextView) findViewById(R.id.tv_net_speed);
         ll_loading = (LinearLayout)findViewById(R.id.ll_loading);
@@ -141,11 +141,11 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
         getData();
 
         //得到播放地址
-        uri = getIntent().getData();
+//        uri = getIntent().getData();
         setListener();
         setData();
         //设置播放地址
-        vv.setVideoURI(uri);
+//        vv.setVideoURI(uri);
 
         //设置控制面板
         //vv.setMediaController(new MediaController(this));

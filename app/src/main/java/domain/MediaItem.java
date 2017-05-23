@@ -40,6 +40,7 @@ public class MediaItem implements Serializable{
     public void setData(String data) {
         this.data = data;
     }
+    public MediaItem(){}
 
     public MediaItem(String name, long duration, long size, String data) {
         this.name = name;

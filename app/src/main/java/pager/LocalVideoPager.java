@@ -49,7 +49,7 @@ public class LocalVideoPager extends BaseFragment {
                 //把系统的播放器调起来
                 Intent intent = new Intent(context, SystemVideoPlayerActivity.class);
                 Bundle bundle = new Bundle();
-                bundle.putSerializable("videoList",mediaItems);
+                bundle.putSerializable("videolist",mediaItems);
                 intent.putExtra("position",position);
                 intent.putExtras(bundle);
                 intent.setDataAndType(Uri.parse(item.getData()),"video/*");

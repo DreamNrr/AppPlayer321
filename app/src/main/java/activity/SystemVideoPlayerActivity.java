@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import domain.MediaItem;
-import io.vov.vitamio.Vitamio;
 import utils.Utils;
 
 
@@ -102,7 +101,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
      * (http://www.buzzingandroid.com/tools/android-layout-finder)
      */
     private void findViews() {
-        Vitamio.isInitialized(getApplicationContext());
+//        Vitamio.isInitialized(getApplicationContext());
         setContentView(R.layout.activity_system_video_player);
         llTop = (LinearLayout) findViewById(R.id.ll_top);
         tvName = (TextView) findViewById(R.id.tv_name);
@@ -153,11 +152,10 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         setListener();
         setData();
         //设置播放地址
-        vv.setVideoURI(uri);
+//        vv.setVideoURI(uri);
 
         //设置控制面板
         //vv.setMediaController(new MediaController(this));
-
     }
 
     private void setData() {
@@ -173,8 +171,6 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
             isNetUri = utils.isNetUri(uri.toString());
         }
         setButtonStatus();
-
-
     }
 
     private void initData() {
@@ -310,6 +306,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     public void getData() {
         uri = getIntent().getData();
         mediaItems = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videolist");
+        Log.e("TAG","getDatamediaItems---size" + mediaItems.size());
         position = getIntent().getIntExtra("position", 0);
     }
 
@@ -373,20 +370,15 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                     } else {
                         seekbarVideo.setSecondaryProgress(0);
                     }
-
                     if (isNetUri && vv.isPlaying()) {
-
                         int duration = currentPosition - preCurrentPosition;
                         if (duration < 500) {
                             ll_buffering.setVisibility(View.VISIBLE);
                         } else {
                             ll_buffering.setVisibility(View.GONE);
                         }
-
                         preCurrentPosition = currentPosition;
                     }
-
-
                     sendEmptyMessageDelayed(PROGRESS, 1000);
                     break;
                 case HIDE_MEDIACONTROLLER:
@@ -428,6 +420,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         vv.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
+                Log.e("TAG","onErrrrrrr");
                 startVitamioPlayer();
                 return true;
             }
@@ -485,7 +478,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         if(vv != null){
             vv.stopPlayback();
         }
-        Intent intent = new Intent(this, SystemVideoPlayerActivity.class);
+        Intent intent = new Intent(this, VitamioVideoPlayerActivity.class);
         if(mediaItems != null && mediaItems.size() >0){
             Bundle bunlder = new Bundle();
             bunlder.putSerializable("videolist",mediaItems);
@@ -552,7 +545,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     private void switchPlayer() {
         new AlertDialog.Builder(this)
                 .setTitle("提示")
-                .setMessage("如果当前为万能播放器播放，当播放有色块，播放质量不好，请切换到系统播放器播放")
+                .setMessage("如果当前为本地播放器播放，当播放有色块，播放质量不好，请切换到万能播放器播放")
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
