@@ -306,7 +306,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
     public void getData() {
         uri = getIntent().getData();
         mediaItems = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videolist");
-        Log.e("TAG","getDatamediaItems---size" + mediaItems.size());
+       // Log.e("TAG","getDatamediaItems---size" + mediaItems.size());
         position = getIntent().getIntExtra("position", 0);
     }
 
@@ -420,7 +420,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         vv.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                Log.e("TAG","onErrrrrrr");
+         //       Log.e("TAG","onErrrrrrr");
                 startVitamioPlayer();
                 return true;
             }
