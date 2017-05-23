@@ -1,7 +1,9 @@
 package activity;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
@@ -36,6 +38,7 @@ import io.vov.vitamio.Vitamio;
 import io.vov.vitamio.widget.VideoView;
 import utils.Utils;
 
+
 public class VitamioVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final int HIDE_MEDIACONTROLLER = 1;
@@ -48,19 +51,13 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
     private boolean isNetUri;
     private  float startY;
     private float startX;//记录手指按下时的Y坐标
-    /**
-     * 滑动的区域
-     */
     private float touchRang;
-    /**
-     * 当前的音量
-     */
     private  int mVol;
     private VideoView vv;
     private Uri uri;
     private static final int PROGRESS = 0;
     private ArrayList<MediaItem> mediaItems;
-
+    private TextView tv_loading_net_speed;
     private LinearLayout llTop;
     private TextView tvName;
     private ImageView ivBattery;
@@ -90,6 +87,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
     private AudioManager am;
     private int maxVoice;
     private boolean isMute = false;
+    private static final int SHOW_NET_SPEED = 2;
 
     /**
      * Find the Views in the layout<br />
@@ -129,6 +127,8 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
         btnSwitchScreen.setOnClickListener( this );
         seekbarVoice.setMax(maxVoice);
         seekbarVoice.setProgress(currentVoice);
+        handler.sendEmptyMessage(SHOW_NET_SPEED);
+        tv_loading_net_speed = (TextView)findViewById(R.id.tv_loading_net_speed);
     }
 
 
@@ -300,7 +300,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
 
     public void getData() {
         uri = getIntent().getData();
-        mediaItems  = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videoList");
+        mediaItems  = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videolist");
         position = getIntent().getIntExtra("position",0);
     }
 
@@ -340,6 +340,14 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
         public void handleMessage(Message msg) {
             super.handleMessage(msg);
             switch (msg.what){
+                case SHOW_NET_SPEED:
+                    if (isNetUri) {
+                        String netSpeed = utils.getNetSpeed(VitamioVideoPlayerActivity.this);
+                        tv_loading_net_speed.setText("正在加载中...." + netSpeed);
+                        tv_net_speed.setText("正在缓冲...." + netSpeed);
+                        sendEmptyMessageDelayed(SHOW_NET_SPEED, 1000);
+                    }
+                    break;
                 case PROGRESS:
                     int currentPosition = (int) vv.getCurrentPosition();
                     seekbarVideo.setProgress(currentPosition);
@@ -499,6 +507,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
             isMute = !isMute;
             updateVoice(isMute);
         } else if ( v == btnSwitchPlayer ) {
+            switchPlayer();
             // Handle clicks for btnSwitchPlayer
         } else if ( v == btnExit ) {
             finish();
@@ -525,6 +534,38 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
         handler.sendEmptyMessageDelayed(HIDE_MEDIACONTROLLER, 4000);
 
 
+    }
+
+    private void switchPlayer() {
+        new AlertDialog.Builder(this)
+                .setTitle("提示")
+                .setMessage("当前使用万能播放器播放，当播放有声音没有画面，请切换到系统播放器播放")
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startSystemPlayer();
+                    }
+                })
+                .setNegativeButton("取消", null)
+                .show();
+
+    }
+    private void startSystemPlayer() {
+        if(vv != null){
+            vv.stopPlayback();
+        }
+        Intent intent = new Intent(this, SystemVideoPlayerActivity.class);
+        if(mediaItems != null && mediaItems.size() >0){
+            Bundle bunlder = new Bundle();
+            bunlder.putSerializable("videolist",mediaItems);
+            intent.putExtra("position",position);
+            //放入Bundler
+            intent.putExtras(bunlder);
+        }else if(uri != null){
+            intent.setData(uri);
+        }
+        startActivity(intent);
+        finish();//关闭系统播放器
     }
 
     private void updateVoice(boolean isMute) {
