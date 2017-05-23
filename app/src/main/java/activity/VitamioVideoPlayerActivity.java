@@ -43,6 +43,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
     private static final int FULL_SCREEN = 1;
     private LinearLayout ll_buffering;
     private TextView tv_net_speed;
+    private LinearLayout ll_loading;
 
     private boolean isNetUri;
     private  float startY;
@@ -118,7 +119,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
         vv = (VideoView)findViewById(R.id.vv);
         ll_buffering = (LinearLayout) findViewById(R.id.ll_buffering);
         tv_net_speed = (TextView) findViewById(R.id.tv_net_speed);
-
+        ll_loading = (LinearLayout)findViewById(R.id.ll_loading);
         btnVoice.setOnClickListener( this );
         btnSwitchPlayer.setOnClickListener( this );
         btnExit.setOnClickListener( this );
@@ -393,6 +394,7 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
                 //vv.seekTo(100);
                 vv.start();//开始播放
                 handler.sendEmptyMessage(PROGRESS);
+                ll_loading.setVisibility(View.GONE);
                 hideMediaController();
 
                 setVideoType(DEFUALT_SCREEN);

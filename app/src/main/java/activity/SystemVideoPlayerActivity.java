@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import domain.MediaItem;
+import io.vov.vitamio.Vitamio;
 import utils.Utils;
 
 
@@ -99,6 +100,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
      * (http://www.buzzingandroid.com/tools/android-layout-finder)
      */
     private void findViews() {
+        Vitamio.isInitialized(getApplicationContext());
         setContentView(R.layout.activity_system_video_player);
         llTop = (LinearLayout)findViewById( R.id.ll_top );
         tvName = (TextView)findViewById( R.id.tv_name );
