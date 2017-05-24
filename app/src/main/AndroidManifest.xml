@@ -295,7 +295,10 @@
             </intent-filter>
         </service>
 
-        <activity android:name="activity.AudioPlayerActivity"></activity>
+        <activity android:name="activity.AudioPlayerActivity"
+            android:launchMode="singleTask">
+
+        </activity>
     </application>
 
 </manifest>

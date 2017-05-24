@@ -1,5 +1,8 @@
 package service;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -13,10 +16,12 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.wzh.appplayer321.IMusicPlayService;
+import com.example.wzh.appplayer321.R;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
+import activity.AudioPlayerActivity;
 import domain.MediaItem;
 
 public class MusicPlayService extends Service {
@@ -78,6 +83,12 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
     }
 
     @Override
+    public void seekTo(int position) throws RemoteException {
+        service.seekTo(position);
+    }
+
+
+    @Override
     public int getPlayMode() throws RemoteException {
         return service.getPlayMode();
     }
@@ -92,6 +103,7 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
     private int position;
     private MediaItem mediaItem;
     public static final String OPEN_COMPLETE = "com.example.wzh.appplayer321.service.MUSICPLAYSERVICE";
+    private NotificationManager nm;
 
     @Override
     public void onCreate() {
@@ -174,13 +186,27 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
 
 
     //开始播放音频
+
     public void start(){
         mediaPlayer.start();
+        nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        Intent intent = new Intent(this, AudioPlayerActivity.class);
+        intent.putExtra("notification",true);
+        PendingIntent pi = PendingIntent.getActivity(this,0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+        Notification notifation = new Notification.Builder(this)
+                .setSmallIcon(R.drawable.notification_music_playing)
+                .setContentTitle("321音乐")
+                .setContentText("正在播放："+getAudioName())
+                .setContentIntent(pi)
+                .build();
+        nm.notify(1,notifation);
     }
     //暂停
     public void pause() {
 
         mediaPlayer.pause();
+        nm.cancel(1);
     }
 
     //得到歌曲的名字
@@ -211,6 +237,10 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
     }
     //设置播放模式
     public void setPlayMode(int mode) {
+    }
+        //拖动
+    private void seekTo(int position) {
+        mediaPlayer.seekTo(position);
     }
 
 

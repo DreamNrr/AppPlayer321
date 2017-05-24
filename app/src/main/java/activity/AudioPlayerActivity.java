@@ -49,6 +49,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     private MyReceiver receiver;
     private Utils utils;
     private final  static  int PROGRESS = 0;
+    private boolean notification;
 
     private Handler handler = new Handler(){
         @Override
@@ -79,7 +80,12 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             service =  IMusicPlayService.Stub.asInterface(iBinder);
             if(service != null){
                 try {
-                    service.openAudio(position);
+                    if (notification) {
+                        setViewData();
+                    } else {
+                        service.openAudio(position);//打开播放第0个音频
+                        //service.getDuration();//能直接调用了-不能
+                    }
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -115,7 +121,30 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
         btnStartPause.setOnClickListener( this );
         btnNext.setOnClickListener( this );
         btnLyric.setOnClickListener( this );
+
+        seekbarAudio.setOnSeekBarChangeListener(new MyOnSeekBarChangeListener());
+
     }
+    class MyOnSeekBarChangeListener implements SeekBar.OnSeekBarChangeListener{
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            if(fromUser){
+                try {
+                    service.seekTo(progress);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+        }
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+        }
+    }
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,7 +224,10 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     }
 
     public void getData() {
-        position = getIntent().getIntExtra("position",0);
+        notification = getIntent().getBooleanExtra("notification", false);
+        if(!notification ){
+            position = getIntent().getIntExtra("position",0);
+        }
     }
 
 
