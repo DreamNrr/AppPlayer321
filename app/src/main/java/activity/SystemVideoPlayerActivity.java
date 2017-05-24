@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -148,7 +149,7 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
         getData();
 
         //得到播放地址
-        uri = getIntent().getData();
+//        uri = getIntent().getData();
         setListener();
         setData();
         //设置播放地址
@@ -370,15 +371,15 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
                     } else {
                         seekbarVideo.setSecondaryProgress(0);
                     }
-                    if (isNetUri && vv.isPlaying()) {
-                        int duration = currentPosition - preCurrentPosition;
-                        if (duration < 500) {
-                            ll_buffering.setVisibility(View.VISIBLE);
-                        } else {
-                            ll_buffering.setVisibility(View.GONE);
-                        }
-                        preCurrentPosition = currentPosition;
-                    }
+//                    if (isNetUri && vv.isPlaying()) {
+//                        int duration = currentPosition - preCurrentPosition;
+//                        if (duration < 500) {
+//                            ll_buffering.setVisibility(View.VISIBLE);
+//                        } else {
+//                            ll_buffering.setVisibility(View.GONE);
+//                        }
+//                        preCurrentPosition = currentPosition;
+//                    }
                     sendEmptyMessageDelayed(PROGRESS, 1000);
                     break;
                 case HIDE_MEDIACONTROLLER:
@@ -472,6 +473,30 @@ public class SystemVideoPlayerActivity extends AppCompatActivity implements View
 
             }
         });
+
+
+        //设置监听卡
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            vv.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+                @Override
+                public boolean onInfo(MediaPlayer mp, int what, int extra) {
+                    switch (what) {
+                        //拖动卡，缓存卡
+                        case MediaPlayer.MEDIA_INFO_BUFFERING_START:
+                            ll_buffering.setVisibility(View.VISIBLE);
+                            break;
+                        //拖动卡，缓存卡结束
+                        case MediaPlayer.MEDIA_INFO_BUFFERING_END:
+                            ll_buffering.setVisibility(View.GONE);
+                            break;
+                    }
+
+                    return true;
+                }
+            });
+        }
+
+
     }
 
     private void startVitamioPlayer() {

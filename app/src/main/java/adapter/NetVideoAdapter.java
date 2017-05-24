@@ -8,14 +8,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.wzh.appplayer321.R;
+import com.squareup.picasso.Picasso;
 
 import org.xutils.image.ImageOptions;
-import org.xutils.x;
 
 import java.util.List;
 
 import domain.MoveInfo;
 import utils.Utils;
+
+import static com.example.wzh.appplayer321.R.id.iv_icon;
 
 
 public class NetVideoAdapter extends BaseAdapter {
@@ -59,7 +61,7 @@ public class NetVideoAdapter extends BaseAdapter {
             viewHolder = new ViewHolder();
             viewHolder.tv_duration = (TextView) convertView.findViewById(R.id.tv_duration);
             viewHolder.tv_name = (TextView) convertView.findViewById(R.id.tv_name);
-            viewHolder.iv_icon = (ImageView) convertView.findViewById(R.id.iv_icon);
+            viewHolder.iv_icon = (ImageView) convertView.findViewById(iv_icon);
             viewHolder.tv_size = (TextView) convertView.findViewById(R.id.tv_size);
             convertView.setTag(viewHolder);
         }else {
@@ -72,8 +74,13 @@ public class NetVideoAdapter extends BaseAdapter {
         viewHolder.tv_size.setText(moveInfo.getVideoLength()+"秒");
 
         viewHolder.tv_duration.setText(moveInfo.getVideoTitle());
-        x.image().bind(viewHolder.iv_icon, moveInfo.getCoverImg(),imageOptions);
+//        x.image().bind(viewHolder.iv_icon, moveInfo.getCoverImg(),imageOptions);
 
+        Picasso.with(context)
+                .load(moveInfo.getCoverImg())
+                .placeholder(R.drawable.video_default)
+                .error(R.drawable.video_default)
+                .into(viewHolder.iv_icon);
         return convertView;
     }
 
