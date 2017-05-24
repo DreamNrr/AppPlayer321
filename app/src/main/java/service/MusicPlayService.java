@@ -4,14 +4,17 @@ import android.app.Service;
 import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.wzh.appplayer321.IMusicPlayService;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import domain.MediaItem;
@@ -69,6 +72,10 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
     public void pre() throws RemoteException {
         service.pre();
     }
+    @Override
+    public boolean isPlaying() throws RemoteException {
+        return mediaPlayer.isPlaying();
+    }
 
     @Override
     public int getPlayMode() throws RemoteException {
@@ -81,9 +88,15 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
     }
 };
     private ArrayList<MediaItem> mediaItems;
+    private MediaPlayer mediaPlayer;
+    private int position;
+    private MediaItem mediaItem;
+
     @Override
     public void onCreate() {
         super.onCreate();
+//        sp = getSharedPreferences("atguigu",MODE_PRIVATE);
+//        playmode = sp.getInt("playmode",getPlaymode());
         getData();
     }
 
@@ -92,14 +105,76 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
        return stub;
     }
 
+
+
     //根据索引位置打开音频
     public void openAudio(int position) {
+        this.position = position;
+        if (mediaItems != null && mediaItems.size() > 0) {
+
+            if(position < mediaItems.size()){
+                mediaItem = mediaItems.get(position);
+
+                //如果不为空释放之前的播放音频的资源
+                if (mediaPlayer != null) {
+                    mediaPlayer.reset();
+                    mediaPlayer = null;
+                }
+                try {
+                    mediaPlayer = new MediaPlayer();
+                    //设置播放地址
+                    mediaPlayer.setDataSource(mediaItem.getData());
+                    mediaPlayer.setOnPreparedListener(new MyOnPreparedListener());
+                    mediaPlayer.setOnErrorListener(new MyOnErrorListener());
+                    mediaPlayer.setOnCompletionListener(new MyOnCompletionListener());
+                    //准备
+                    mediaPlayer.prepareAsync();
+
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        } else {
+            Toast.makeText(MusicPlayService.this, "音频还没有加载完成", Toast.LENGTH_SHORT).show();
+        }
     }
+
+    class MyOnPreparedListener implements MediaPlayer.OnPreparedListener{
+
+        @Override
+        public void onPrepared(MediaPlayer mp) {
+            start();
+        }
+    }
+
+    class MyOnErrorListener implements MediaPlayer.OnErrorListener{
+        @Override
+        public boolean onError(MediaPlayer mp, int what, int extra) {
+            next();//播放下一个
+            return true;
+        }
+    }
+
+    class MyOnCompletionListener implements MediaPlayer.OnCompletionListener{
+
+        @Override
+        public void onCompletion(MediaPlayer mp) {
+            //播放下一个
+            next();
+        }
+    }
+
+
     //开始播放音频
     public void start(){
+        mediaPlayer.start();
     }
     //暂停
     public void pause() {
+
+        mediaPlayer.pause();
     }
 
     //得到歌曲的名字

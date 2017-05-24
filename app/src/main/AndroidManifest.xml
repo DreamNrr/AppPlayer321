@@ -290,7 +290,9 @@
 
             android:enabled="true"
             android:exported="true" >
-
+            <intent-filter >
+                <action android:name="com.example.wzh.appplayer321.service.MUSICPLAYSERVICE"/>
+            </intent-filter>
         </service>
 
         <activity android:name="activity.AudioPlayerActivity"></activity>

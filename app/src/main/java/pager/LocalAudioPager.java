@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.MediaStore;
@@ -44,11 +43,11 @@ public class LocalAudioPager extends BaseFragment {
 
                 Intent intent = new Intent(context, AudioPlayerActivity.class);
 
-                Bundle bunlder = new Bundle();
-                bunlder.putSerializable("videolist",mediaItems);
+//                Bundle bunlder = new Bundle();
+//                bunlder.putSerializable("videolist",mediaItems);
                 intent.putExtra("position",position);
                 //放入Bundler
-                intent.putExtras(bunlder);
+//                intent.putExtras(bunlder);
                 startActivity(intent);
 
 
@@ -93,12 +92,12 @@ public class LocalAudioPager extends BaseFragment {
             public void run() {
                 mediaItems = new ArrayList<MediaItem>();
                 ContentResolver resolver = context.getContentResolver();
-                Uri uri =  MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                Uri uri =  MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
                 String[] objs = {
-                        MediaStore.Audio.Media.DISPLAY_NAME,//视频在sdcard上的名称
-                        MediaStore.Audio.Media.DURATION,//视频时长
-                        MediaStore.Audio.Media.SIZE,//视频文件的大小
-                        MediaStore.Audio.Media.DATA//视频播放地址
+                        MediaStore.Audio.Media.DISPLAY_NAME,
+                        MediaStore.Audio.Media.DURATION,
+                        MediaStore.Audio.Media.SIZE,
+                        MediaStore.Audio.Media.DATA
                 };
                 Cursor cursor = resolver.query(uri, objs, null, null, null);
                 if (cursor != null) {
