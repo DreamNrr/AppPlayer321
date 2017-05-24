@@ -91,6 +91,7 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
     private MediaPlayer mediaPlayer;
     private int position;
     private MediaItem mediaItem;
+    public static final String OPEN_COMPLETE = "com.example.wzh.appplayer321.service.MUSICPLAYSERVICE";
 
     @Override
     public void onCreate() {
@@ -145,8 +146,13 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
 
         @Override
         public void onPrepared(MediaPlayer mp) {
+            notifyChange(OPEN_COMPLETE);
             start();
         }
+    }
+    private void notifyChange(String action) {
+        Intent intent = new Intent(action);
+        sendBroadcast(intent);
     }
 
     class MyOnErrorListener implements MediaPlayer.OnErrorListener{
@@ -179,19 +185,19 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
 
     //得到歌曲的名字
     public String getAudioName() {
-        return "";
+        return mediaItem.getName();
     }
     //得到演唱者的名字
     public String getArtistName() {
-        return "";
+        return mediaItem.getArtist();
     }
     //得到歌曲当前播放的进度
     public int getCurrentPosition() {
-        return 0;
+        return mediaPlayer.getCurrentPosition();
     }
     //得到歌曲的总进度
     public int getDuration() {
-        return 0;
+        return mediaPlayer.getDuration();
     }
    //播放下一首
     public void next() {

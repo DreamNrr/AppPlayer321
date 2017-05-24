@@ -1,12 +1,16 @@
 package activity;
 
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -21,6 +25,7 @@ import com.example.wzh.appplayer321.IMusicPlayService;
 import com.example.wzh.appplayer321.R;
 
 import service.MusicPlayService;
+import utils.Utils;
 
 import static com.example.wzh.appplayer321.R.id.iv_icon;
 
@@ -39,10 +44,33 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     private Button btnStartPause;
     private Button btnNext;
     private Button btnLyric;
-    //这个就是IMusicPlayService.Stub的实例
     private IMusicPlayService service;
     private int position;
+    private MyReceiver receiver;
+    private Utils utils;
+    private final  static  int PROGRESS = 0;
 
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case PROGRESS:
+                    try {
+                        int currentPosition = service.getCurrentPosition();
+                        seekbarAudio.setProgress(currentPosition);
+                        //设置更新时间
+                        tvTime.setText(utils.stringForTime(currentPosition)+"/"+utils.stringForTime(service.getDuration()));
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                    //每秒中更新一次
+                    removeMessages(PROGRESS);
+                    sendEmptyMessageDelayed(PROGRESS,1000);
+                    break;
+            }
+        }
+    };
 
     private ServiceConnection conon = new ServiceConnection() {
         //绑定服务成功
@@ -93,12 +121,39 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        initData();
         findViews();
         getData();
         startAndBindService();
 
         Intent intent = new Intent(this, MusicPlayService.class);
         startService(intent);
+    }
+
+    private void initData() {
+        receiver = new MyReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(MusicPlayService.OPEN_COMPLETE);
+        registerReceiver(receiver,intentFilter);
+        utils = new Utils();
+    }
+    class MyReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            setViewData();
+        }
+    }
+    private void setViewData() {
+        try {
+            tvArtist.setText(service.getArtistName());
+            tvAudioname.setText(service.getAudioName());
+            int duration = service.getDuration();
+            seekbarAudio.setMax(duration);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        handler.sendEmptyMessage(PROGRESS);
     }
 
     private void startAndBindService() {
@@ -161,5 +216,10 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             unbindService(conon);
             conon = null;
         }
+        if(receiver != null){
+            unregisterReceiver(receiver);
+            receiver = null;
+        }
+
     }
 }
