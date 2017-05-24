@@ -1,7 +1,10 @@
 package pager;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -38,10 +41,13 @@ public class NetVideoPager extends BaseFragment {
     //判断当前是下拉还是上拉
     private boolean isLoadMore = false;
     private List<MoveInfo.TrailersBean> datas;
+    public static final String uri = "http://api.m.mtime.cn/PageSubArea/TrailerList.api";
+    private SharedPreferences sp;
 
     //重写视图
     @Override
     public View initView() {
+        sp = context.getSharedPreferences("atguigu", Context.MODE_PRIVATE);
         View view = View.inflate(context, R.layout.fragment_net_video_pager,null);
         lv = (ListView) view.findViewById(R.id.lv);
         tv_nodata = (TextView) view.findViewById(R.id.tv_nodata);
@@ -115,14 +121,21 @@ public class NetVideoPager extends BaseFragment {
     @Override
     public void initData() {
         super.initData();
+        String saveJson = sp.getString(uri, "");
+        if(!TextUtils.isEmpty(saveJson)){
+            //解析缓存的数据
+            processData(saveJson);
+            Log.e("TAG","解析缓存的数据=="+saveJson);
+        }
         getDataFromNet();
     }
 
     public void getDataFromNet() {
-        final RequestParams request = new RequestParams("http://api.m.mtime.cn/PageSubArea/TrailerList.api");
+        final RequestParams request = new RequestParams(uri);
         x.http().get(request, new Callback.CommonCallback<String>() {
             @Override
             public void onSuccess(String result) {
+                sp.edit().putString(uri,result).commit();
                 Log.e("TAG","下拉刷新联网成功了");
 
                 processData(result);
@@ -143,30 +156,6 @@ public class NetVideoPager extends BaseFragment {
     }
     
     private void processData(String result) {
-
-//        mediaItems = new ArrayList<>();
-//        try {
-//            JSONObject jsonObject = new JSONObject(result);
-//            JSONArray trailers = jsonObject.getJSONArray("trailers");
-//            for(int i = 0; i < trailers.length(); i++) {
-//
-//                String movieName = trailers.getJSONObject(i).getString("movieName");
-//                String videoTitle = trailers.getJSONObject(i).getString("videoTitle");
-//                String coverImg = trailers.getJSONObject(i).getString("coverImg");
-//                int videoLength =trailers.getJSONObject(i).getInt("videoLength");
-//                String url = trailers.getJSONObject(i).getString("url");
-//                Log.e("TAG","uri===" + url);
-//                MediaItem mediaItemss = new MediaItem(movieName, coverImg, videoLength,videoTitle,url);
-//                mediaItems.add(mediaItemss);
-//            }
-//
-//           adapter = new NetVideoAdapter(context,mediaItems);
-//            lv.setAdapter(adapter);
-//            tv_nodata.setVisibility(View.GONE);
-//
-//            }catch (JSONException e) {
-//                e.printStackTrace();
-//        }
         MoveInfo moveInfo = new Gson().fromJson(result, MoveInfo.class);
 //        List<MoveInfo.TrailersBean> datas = moveInfo.getTrailers();
         if(!isLoadMore) {

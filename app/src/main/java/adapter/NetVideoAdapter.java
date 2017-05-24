@@ -26,6 +26,7 @@ public class NetVideoAdapter extends BaseAdapter {
     private Utils utils;
     private ImageOptions imageOptions;
 
+
     public NetVideoAdapter(Context context,  List<MoveInfo.TrailersBean> data) {
         this.context = context;
         this.data = data;
