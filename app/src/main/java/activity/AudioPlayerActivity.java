@@ -175,6 +175,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     }
     private void setViewData() {
         try {
+            setButtonImage();
             tvArtist.setText(service.getArtistName());
             tvAudioname.setText(service.getAudioName());
             int duration = service.getDuration();
@@ -195,8 +196,14 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     @Override
     public void onClick(View view) {
         if ( view == btnPlaymode ) {
+            setPlayMode();
             // Handle clicks for btnPlaymode
         } else if ( view == btnPre ) {
+            try {
+                service.pre();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
             // Handle clicks for btnPre
         } else if ( view == btnStartPause ) {
             // Handle clicks for btnStartPause
@@ -217,29 +224,54 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             }
 
         } else if ( view == btnNext ) {
+            try {
+                service.next();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
             // Handle clicks for btnNext
         } else if ( view == btnLyric ) {
             // Handle clicks for btnLyric
         }
     }
-
     public void getData() {
         notification = getIntent().getBooleanExtra("notification", false);
         if(!notification ){
             position = getIntent().getIntExtra("position",0);
         }
     }
-
-
-
-
-
-
-
-
-
-
-
+    private void setButtonImage() {
+        try {
+            //从服务得到播放模式
+            int playmode = service.getPlaymode();
+            if (playmode == MusicPlayService.REPEAT_NORMAL) {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_normal_selector);
+            } else if (playmode == MusicPlayService.REPEAT_SINGLE) {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_single_selector);
+            } else if (playmode == MusicPlayService.REPEAT_ALL) {
+                btnPlaymode.setBackgroundResource(R.drawable.btn_playmode_all_selector);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+    private void setPlayMode() {
+        try {
+            int playmode = service.getPlaymode();
+            if (playmode == MusicPlayService.REPEAT_NORMAL) {
+                playmode = MusicPlayService.REPEAT_SINGLE;
+            } else if (playmode == MusicPlayService.REPEAT_SINGLE) {
+                playmode = MusicPlayService.REPEAT_ALL;
+            } else if (playmode == MusicPlayService.REPEAT_ALL) {
+                playmode = MusicPlayService.REPEAT_NORMAL;
+            }
+            //保存到服务里面
+            service.setPlaymode(playmode);
+            setButtonImage();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     protected void onDestroy() {

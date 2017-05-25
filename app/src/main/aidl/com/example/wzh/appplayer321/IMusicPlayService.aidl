@@ -32,9 +32,9 @@ interface IMusicPlayService {
     //播放下一首
     void pre();
     //得到播放模式
-   int getPlayMode();
-    //设置播放模式
-   void setPlayMode(int mode);
+   int getPlaymode();
+   void setPlaymode(int playmode);
+
 
    boolean isPlaying();
    void seekTo(int position);
