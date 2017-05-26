@@ -24,6 +24,11 @@ import android.widget.TextView;
 import com.example.wzh.appplayer321.IMusicPlayService;
 import com.example.wzh.appplayer321.R;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import domain.MediaItem;
 import service.MusicPlayService;
 import utils.Utils;
 
@@ -81,7 +86,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             if(service != null){
                 try {
                     if (notification) {
-                        setViewData();
+                        setViewData(null);
                     } else {
                         service.openAudio(position);//打开播放第0个音频
                         //service.getDuration();//能直接调用了-不能
@@ -165,15 +170,17 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
         intentFilter.addAction(MusicPlayService.OPEN_COMPLETE);
         registerReceiver(receiver,intentFilter);
         utils = new Utils();
+        EventBus.getDefault().register(this);
     }
     class MyReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            setViewData();
+            setViewData(null);
         }
     }
-    private void setViewData() {
+    @Subscribe(threadMode= ThreadMode.MAIN)
+    public void setViewData(MediaItem mediaItem) {
         try {
             setButtonImage();
             tvArtist.setText(service.getArtistName());
@@ -284,6 +291,7 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
             unregisterReceiver(receiver);
             receiver = null;
         }
+        EventBus.getDefault().unregister(this);
 
     }
 }

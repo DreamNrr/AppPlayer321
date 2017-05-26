@@ -140,15 +140,8 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
         findViews();
         getData();
 
-        //得到播放地址
-//        uri = getIntent().getData();
         setListener();
         setData();
-        //设置播放地址
-//        vv.setVideoURI(uri);
-
-        //设置控制面板
-        //vv.setMediaController(new MediaController(this));
 
     }
 
@@ -165,8 +158,6 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
             isNetUri =  utils.isNetUri(uri.toString());
         }
         setButtonStatus();
-
-
 
     }
 

@@ -98,22 +98,17 @@ public class NetVideoPager extends BaseFragment {
                 processData(result);
                 // 结束上拉刷新...
                 materialRefreshLayout.finishRefreshLoadMore();
-
             }
 
             @Override
             public void onError(Throwable ex, boolean isOnCallback) {
                 Log.e("TAG", "加载更xUtils联网失败==" + ex.getMessage());
             }
-
             @Override
             public void onCancelled(CancelledException cex) {
-
             }
-
             @Override
             public void onFinished() {
-
             }
         });
     }

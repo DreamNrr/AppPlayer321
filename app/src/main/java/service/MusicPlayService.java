@@ -19,6 +19,8 @@ import android.widget.Toast;
 import com.example.wzh.appplayer321.IMusicPlayService;
 import com.example.wzh.appplayer321.R;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -121,10 +123,6 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
 
    //设置播放的模式
     private int playmode = REPEAT_NORMAL;
-
-
-
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -132,13 +130,10 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
       playmode = sp.getInt("playmode",getPlaymode());
         getData();
     }
-
     @Override
     public IBinder onBind(Intent intent) {
        return stub;
     }
-
-
 
     //根据索引位置打开音频
     public void openAudio(int position) {
@@ -180,7 +175,10 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
 
         @Override
         public void onPrepared(MediaPlayer mp) {
-            notifyChange(OPEN_COMPLETE);
+
+
+            EventBus.getDefault().post(mediaItem);
+           // notifyChange(OPEN_COMPLETE);
             start();
         }
     }
@@ -301,7 +299,6 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
             }
         }
     }
-
     //播放上一首
     public void pre() {
         setPrePosition();
