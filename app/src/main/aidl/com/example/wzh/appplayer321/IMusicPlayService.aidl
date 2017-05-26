@@ -35,7 +35,7 @@ interface IMusicPlayService {
    int getPlaymode();
    void setPlaymode(int playmode);
 
-
+    String getAudioPath();
    boolean isPlaying();
    void seekTo(int position);
 

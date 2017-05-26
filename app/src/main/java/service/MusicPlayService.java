@@ -99,6 +99,11 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
         service.setPlaymode(playmode);
     }
 
+    @Override
+    public String getAudioPath() throws RemoteException {
+        return service.getAudioPath();
+    }
+
 
 };
     private ArrayList<MediaItem> mediaItems;
@@ -354,6 +359,8 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
         return playmode;
     }
 
+
+
     public void setPlaymode(int playmode) {
         this.playmode = playmode;
         sp.edit().putInt("playmode",playmode).commit();
@@ -398,5 +405,11 @@ private IMusicPlayService.Stub stub = new IMusicPlayService.Stub() {
 
             }
         }.start();
+    }
+
+
+
+    private String getAudioPath() {
+        return mediaItem.getData();
     }
 }

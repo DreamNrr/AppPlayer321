@@ -22,7 +22,7 @@ public class LyricShowView extends TextView {
     private int height;
     private ArrayList<Lyric> lyrics;
     private int index = 0;
-    private float textHeight = 20;
+    private float textHeight = 40;
     private int currentPosition;
     public LyricShowView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -39,28 +39,28 @@ public class LyricShowView extends TextView {
     private void initView() {
         paintGreen = new Paint();
         paintGreen.setColor(Color.GREEN);
-        paintGreen.setTextSize(28);
+        paintGreen.setTextSize(40);
         paintGreen.setTextAlign(Paint.Align.CENTER);
 
 
         paintWhite = new Paint();
         paintWhite.setColor(Color.WHITE);
-        paintWhite.setTextSize(28);
+        paintWhite.setTextSize(40);
         paintWhite.setTextAlign(Paint.Align.CENTER);
 
 //准备歌词
-        lyrics = new ArrayList<>();
-        Lyric lyric = new Lyric();
-        for (int i = 0; i < 10000; i++) {
-            //不同歌词
-            lyric.setContent("aaaaaaaaaaaa_" + i);
-            lyric.setSleepTime(2000);
-            lyric.setTimePoint(2000*i);
-            //添加到集合
-            lyrics.add(lyric);
-            //重新创建新对象
-            lyric = new Lyric();
-        }
+//        lyrics = new ArrayList<>();
+//        Lyric lyric = new Lyric();
+//        for (int i = 0; i < 10000; i++) {
+//            //不同歌词
+//            lyric.setContent("aaaaaaaaaaaa_" + i);
+//            lyric.setSleepTime(2000);
+//            lyric.setTimePoint(2000*i);
+//            //添加到集合
+//            lyrics.add(lyric);
+//            //重新创建新对象
+//            lyric = new Lyric();
+//        }
     }
     @Override
     protected void onDraw(Canvas canvas) {
@@ -113,5 +113,11 @@ public class LyricShowView extends TextView {
 
         }
         invalidate();
+    }
+
+
+    public void setLyrics(ArrayList<Lyric> lyrics) {
+        this.lyrics = lyrics;
+
     }
 }

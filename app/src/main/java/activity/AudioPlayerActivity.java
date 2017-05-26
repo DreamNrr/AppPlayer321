@@ -29,8 +29,13 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
+import java.util.ArrayList;
+
+import domain.Lyric;
 import domain.MediaItem;
 import service.MusicPlayService;
+import utils.LyricsUtils;
 import utils.Utils;
 
 import static com.example.wzh.appplayer321.R.id.iv_icon;
@@ -197,11 +202,38 @@ public class AudioPlayerActivity extends AppCompatActivity implements View.OnCli
     @Subscribe(threadMode= ThreadMode.MAIN)
     public void setViewData(MediaItem mediaItem) {
         try {
-            setButtonImage();
+
+
             tvArtist.setText(service.getArtistName());
             tvAudioname.setText(service.getAudioName());
+            setButtonImage();
+
             int duration = service.getDuration();
             seekbarAudio.setMax(duration);
+
+            String audioPath = service.getAudioPath();//mnt/sdcard/audio/beijingbeijing.mp3
+
+            String lyricPath = audioPath.substring(0,audioPath.lastIndexOf("."));//mnt/sdcard/audio/beijingbeijing
+            File file = new File(lyricPath+".lrc");
+            if(!file.exists()){
+                file = new File(lyricPath+".txt");
+            }
+            LyricsUtils lyricsUtils = new LyricsUtils();
+            lyricsUtils.readFile(file);
+
+            //2.传入解析歌词的工具类
+            ArrayList<Lyric> lyrics = lyricsUtils.getLyrics();
+            lyric_show_view.setLyrics(lyrics);
+
+            //3.如果有歌词，就歌词同步
+
+            if(lyricsUtils.isLyric()){
+                handler.sendEmptyMessage(SHOW_LYRIC);
+            }
+
+
+
+
         } catch (RemoteException e) {
             e.printStackTrace();
         }
