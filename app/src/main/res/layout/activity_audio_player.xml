@@ -112,6 +112,15 @@
         </LinearLayout>
 
     </LinearLayout>
-    
+
+    <com.example.wzh.appplayer321.view.LyricShowView
+        android:layout_below="@id/rl_top"
+        android:layout_above="@id/ll_bottom"
+        android:id="@+id/lyric_show_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </com.example.wzh.appplayer321.view.LyricShowView>
+
 
 </RelativeLayout>
