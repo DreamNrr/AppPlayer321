@@ -1,29 +1,43 @@
 package pager;
 
-import android.graphics.Color;
-import android.view.Gravity;
+import android.util.Log;
 import android.view.View;
+import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.wzh.appplayer321.R;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import fragment.BaseFragment;
 
 
 public class NetAudioPager extends BaseFragment {
-    private TextView textView;
-
+    private static final String TAG = NetAudioPager.class.getSimpleName();
+    @Bind(R.id.listview)
+    ListView listview;
+    @Bind(R.id.progressbar)
+    ProgressBar progressbar;
+    @Bind(R.id.tv_nomedia)
+    TextView tvNomedia;
     //重写视图
     @Override
     public View initView() {
-        textView = new TextView(context);
-        textView.setTextSize(30);
-        textView.setGravity(Gravity.CENTER);
-        textView.setTextColor(Color.RED);
-        return textView;
+        Log.e("TAG", TAG + "网络音频UI被初始化了");
+        View view = View.inflate(context, R.layout.fragment_net_audio, null);
+        ButterKnife.bind(this, view);
+        return view;
     }
 
     @Override
     public void initData() {
         super.initData();
-        textView.setText("网络音乐的内容");
+        Log.e("TAG", TAG + "网络音频数据初始化了");
+    }
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
     }
 }
