@@ -65,7 +65,6 @@ public class LyricShowView extends TextView {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-
         if (lyrics != null && lyrics.size() > 0) {
             String currentContent = lyrics.get(index).getContent();
             canvas.drawText(currentContent, width / 2, height / 2, paintGreen);
@@ -80,12 +79,10 @@ public class LyricShowView extends TextView {
                 canvas.drawText(preContent, width / 2, tempY, paintWhite);
             }
             tempY = height / 2;
-
             //绘制后面部分
             for (int i = index + 1; i < lyrics.size(); i++) {
                 //得到后一部分多月的歌词内容
                 String nextContent = lyrics.get(i).getContent();
-
                 tempY = tempY + textHeight;
                 if (tempY > height) {
                     break;
@@ -97,7 +94,6 @@ public class LyricShowView extends TextView {
             canvas.drawText("没有找到歌词", getWidth() / 2, getHeight() / 2, paintGreen);
         }
     }
-
     public void setNextShowLyric(int currentPosition) {
         this.currentPosition = currentPosition;
         if (lyrics == null || lyrics.size() == 0)
@@ -110,11 +106,9 @@ public class LyricShowView extends TextView {
                     index = tempIndex;
                 }
             }
-
         }
         invalidate();
     }
-
 
     public void setLyrics(ArrayList<Lyric> lyrics) {
         this.lyrics = lyrics;

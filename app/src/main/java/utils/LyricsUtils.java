@@ -61,8 +61,6 @@ public class LyricsUtils {
                     //解析每一行歌词,并且把解析好的歌词加入到集合里面
                     analyzeLyric(line);
                 }
-
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -129,7 +127,7 @@ public class LyricsUtils {
 
                 if (pos1 == 0 && pos2 != -1) {//至少还有一句
 
-                    timeStr = line.substring(pos1 + 1, pos2);//03:37.32-->00:59.73
+                    timeStr = content.substring(pos1 + 1, pos2);//03:37.32-->00:59.73
                     //解析第1句
                     timeLongs[i] = stringToLong(timeStr);//02:04.12转换成long的毫秒类型-->00:59.73转换成毫秒
 
