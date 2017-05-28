@@ -1082,5 +1082,8 @@ public class NetAudioBean {
                 this.vote_num = vote_num;
             }
         }
+
+        public class TagsEntity {
+        }
     }
 }
