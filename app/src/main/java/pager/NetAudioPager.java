@@ -8,7 +8,10 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.cjj.MaterialRefreshLayout;
+import com.cjj.MaterialRefreshListener;
 import com.example.wzh.appplayer321.R;
 import com.google.gson.Gson;
 
@@ -40,14 +43,79 @@ public class NetAudioPager extends BaseFragment {
     private NetAudioFragmentAdapter adapter;
     private List<NetAudioBean.ListBean> datas;
 
+
+    private final static String LAST_URL = "http://s.budejie.com/topic/list/jingxuan/1/budejie-android-6.2.8/0-";
+    private final static String NEXT_URL = ".json?market=baidu&udid=863425026599592&appname=baisibudejie&os=4.2.2&client=android&visiting=&mac=98%3A6c%3Af5%3A4b%3A72%3A6d&ver=6.2.8\\";
+    private int count = 30;
+    private MaterialRefreshLayout refresh;
+    private boolean isLoadMore = false;
+
+
+
+
     //重写视图
     @Override
     public View initView() {
         Log.e("TAG", TAG + "网络音频UI被初始化了");
         View view = View.inflate(context, R.layout.fragment_net_audio, null);
         ButterKnife.bind(this, view);
+        refresh = (MaterialRefreshLayout) view.findViewById(R.id.refresh);
+        refresh.setMaterialRefreshListener(new MaterialRefreshListener() {
+            @Override
+            public void onRefresh(MaterialRefreshLayout materialRefreshLayout) {
+                isLoadMore = false;
+                getDataFromNet();
+
+            }
+            @Override
+            public void onRefreshLoadMore(MaterialRefreshLayout materialRefreshLayout) {
+                super.onRefreshLoadMore(materialRefreshLayout);
+                isLoadMore = true;
+                getMoreData();
+            }
+
+        });
         return view;
     }
+
+    private void getMoreData() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String newUrl = LAST_URL + count + NEXT_URL;
+                final RequestParams request = new RequestParams(newUrl);
+                x.http().get(request, new Callback.CommonCallback<String>() {
+                    @Override
+                    public void onSuccess(String result) {
+                        Log.e("TAG", result);
+                        processData(result);
+                        refresh.finishRefreshLoadMore();
+                        count += 10;
+                    }
+
+                    @Override
+                    public void onError(Throwable ex, boolean isOnCallback) {
+                        Toast.makeText(context, "onError--", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onCancelled(CancelledException cex) {
+
+                    }
+
+                    @Override
+                    public void onFinished() {
+
+                    }
+                });
+            }
+        }).start();
+    }
+
+
+
+
+
 
     @Override
     public void initData() {
@@ -132,6 +200,7 @@ public class NetAudioPager extends BaseFragment {
                 CacheUtils.putString(context,NET_AUDIO_URL, result);
                 LogUtil.e("onSuccess==" + result);
                 processData(result);
+                refresh.finishRefresh();
             }
 
             @Override
